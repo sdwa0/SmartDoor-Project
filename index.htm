@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SmartDoor</title>
+    <script>
+      strLock = "";
+      var Lock_state = 0;
+      function GetLockState()
+      {
+        nocache = "&nocache=" + Math.random() * 1000000;
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function()
+        {
+          if (this.readyState == 4) {
+            if (this.status == 200) {
+              if (this.responseXML != null) {
+                // XML file received - contains analog values, switch values and LED states
+                var count;
+                if (this.responseXML.getElementsByTagName('Lock')[0].childNodes[0].nodeValue === "locked") {
+                  document.getElementById("Lock").style.display = "none";
+                  document.getElementById("Unlock").style.display = "block";
+                  Lock_state = 1;
+                } else {
+                  document.getElementById("Lock").style.display = "block";
+                  document.getElementById("Unlock").style.display = "none";
+                  Lock_state = 0;
+                }
+              }
+            }
+          }
+        }
+        // send HTTP GET request with LEDs to switch on/off if any
+        request.open("GET", "ajax_inputs" + strLock + nocache, true);
+        request.send(null);
+        setTimeout('GetLockState()', 1000);
+        strLock = "";
+      }
+
+      function GetButton()
+      {
+        if (Lock_state === 1) {
+          Lock_state = 0;
+          strLock = "&Lock=0";
+        } else {
+          Lock_state = 1;
+          strLock = "&Lock=1";
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: black;
+        background-repeat: no-repeat; 
+      }
+      .IO_box {
+        float: left;
+        margin: 0 20px 20px 0;
+        border: 1px solid blue;
+        padding: 0 5px 0 5px;
+        width: 120px;
+      }
+      h1 {
+        font-size: 120%;
+        color: blue;
+        margin: 0 0 10px 0;
+      }
+      h2 {
+        font-size: 85%;
+        color: #5734E6;
+        margin: 5px 0 5px 0;
+      }
+      p, form, button {
+        font-size: 120%;
+        color: #819EAD;
+      }
+      .small_text {
+        font-size: 70%;
+        color: #737373;
+      }
+      #Lock {
+        display: none;
+      }
+      #Unlock {
+        display: none;
+      }
+    </style>
+  </head>
+  <body onload="GetLockState()">
+    <div id="Lock">
+      <p>   The door is open<br/>Click to lock</p>
+      <input type="image" src="lock.jpg" onclick="GetButton()" />
+    </div>
+    <div id="Unlock">
+      <p>The door is locked<br/>Click to unlock</p>
+      <input type="image" src="unlock.jpg" onclick="GetButton()" />
+    </div>
+  </body>
+</html>
